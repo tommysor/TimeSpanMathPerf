@@ -1,0 +1,4 @@
+{
+    "git.autofetch": true,
+    "dotnet.defaultSolution": "PerfTest.sln"
+}
