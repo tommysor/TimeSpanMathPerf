@@ -355,6 +355,28 @@ namespace System.PerfTest
             return new TimeSpan(ticks);
         }
 
+        public static TimeSpan FromDays2(int days, int hours = 0, long minutes = 0, long seconds = 0, long milliseconds = 0, long microseconds = 0)
+        {
+            Int128 totalMicroseconds = BigMul(days, MicrosecondsPerDay)
+                                     + BigMul(hours, MicrosecondsPerHour)
+                                     + BigMul(minutes, MicrosecondsPerMinute)
+                                     + BigMul(seconds, MicrosecondsPerSecond)
+                                     + BigMul(milliseconds, MicrosecondsPerMillisecond)
+                                     + microseconds;
+  
+            if ((totalMicroseconds > MaxMicroseconds) || (totalMicroseconds < MinMicroseconds))
+            {
+                ThrowHelper.ThrowArgumentOutOfRange_TimeSpanTooLong();
+            }
+            var ticks = (long)totalMicroseconds * TicksPerMicrosecond;
+            return new TimeSpan(ticks);
+        }
+        internal static Int128 BigMul(long a, long b)
+        {
+            long upper = Math.BigMul(a, b, out long lower);
+            return new Int128((ulong)upper, (ulong)lower);
+        }
+
         public static TimeSpan FromDaysDoubles(int days, int hours = 0, long minutes = 0, long seconds = 0, long milliseconds = 0, long microseconds = 0)
         {
             return FromDays((double)days)
