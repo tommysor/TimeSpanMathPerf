@@ -471,11 +471,57 @@ namespace System.PerfTest
         /// </summary>
         /// <param name="milliseconds">Number of milliseconds.</param>
         /// <param name="microseconds">Number of microseconds.</param>
-        /// <returns></returns>
+        /// <returns>Returns a <see cref="TimeSpan"/> that represents a specified number of milliseconds, and microseconds.</returns>
         /// <exception cref="ArgumentOutOfRangeException">
         /// The parameters specify a <see cref="TimeSpan"/> value less than <see cref="MinValue"/> or greater than <see cref="MaxValue"/>
         /// </exception>
-        public static TimeSpan FromMilliseconds(long milliseconds, long microseconds = 0) => FromDays(0, milliseconds: milliseconds, microseconds: microseconds);
+        public static TimeSpan FromMilliseconds(long milliseconds, long microseconds = 0)
+        {
+            Int128 totalMicroseconds = BigMul(milliseconds, MicrosecondsPerMillisecond)
+                                     + microseconds;
+
+            return FromMicroseconds(totalMicroseconds);
+        }
+
+        public static TimeSpan FromMilliseconds2(long milliseconds, long microseconds = 0)
+        {
+            if (microseconds == 0)
+            {
+                return FromUnits(milliseconds, TicksPerMillisecond, MinMilliseconds, MaxMilliseconds);
+            }
+
+            Int128 totalMicroseconds = BigMul(milliseconds, MicrosecondsPerMillisecond)
+                                     + microseconds;
+
+            return FromMicroseconds(totalMicroseconds);
+        }
+
+        public static TimeSpan FromMilliseconds(long milliseconds)
+            => FromUnits(milliseconds, TicksPerMillisecond, MinMilliseconds, MaxMilliseconds);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static TimeSpan FromUnits(long units, long ticksPerUnit, long minUnits, long maxUnits)
+        {
+            System.Diagnostics.Debug.Assert(minUnits < 0);
+            System.Diagnostics.Debug.Assert(maxUnits > 0);
+
+            if (units > maxUnits || units < minUnits)
+            {
+                ThrowHelper.ThrowArgumentOutOfRange_TimeSpanTooLong();
+            }
+            return TimeSpan.FromTicks(units * ticksPerUnit);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static TimeSpan FromMicroseconds(Int128 microseconds)
+        {
+            if ((microseconds > MaxMicroseconds) || (microseconds < MinMicroseconds))
+            {
+                ThrowHelper.ThrowArgumentOutOfRange_TimeSpanTooLong();
+            }
+            long ticks = (long)microseconds * TicksPerMicrosecond;
+            return TimeSpan.FromTicks(ticks);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TimeSpan"/> structure to a specified number of

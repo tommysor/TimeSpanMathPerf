@@ -2,4 +2,5 @@
 using PerfTest;
 
 // BenchmarkRunner.Run<Benchmarks>();
-BenchmarkRunner.Run<BenchmarksInt128Compare>();
+// BenchmarkRunner.Run<BenchmarksInt128Compare>();
+BenchmarkRunner.Run<BenchmarksMilliseconds>();
